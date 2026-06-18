@@ -116,3 +116,45 @@ def get_campaign_prediction(product_id: int, influencer_id: int):
         "ai_confidence_score": 92
     }
 
+
+# --- PHASE 2: DASHBOARD INTEGRATION ENDPOINTS ---
+
+@app.get("/analytics/revenue")
+def get_revenue_graph():
+    """Returns month-by-month dummy revenue data for the chart."""
+    return {
+        "labels": ["Jan", "Feb", "Mar", "Apr", "May", "Jun"],
+        "data": [42000, 58000, 75000, 92000, 110000, 150000] # Increasing revenue
+    }
+
+@app.get("/analytics/impact")
+def get_impact_stats():
+    """Returns overall platform impact stats."""
+    return {
+        "revenue_generated": "₹12.5L",
+        "families_supported": "850+",
+        "active_campaigns": 142
+    }
+
+@app.get("/campaigns/recent")
+def get_recent_campaigns():
+    """Returns a list of recent campaigns for the dashboard."""
+    return [
+        {"id": 1, "product": "Organic Clay Vase", "status": "Active", "influencers": 12, "roi": "+140%"},
+        {"id": 2, "product": "Handloom Silk Saree", "status": "Completed", "influencers": 8, "roi": "+210%"},
+        {"id": 3, "product": "Bamboo Desk Organizer", "status": "Active", "influencers": 25, "roi": "+85%"},
+        {"id": 4, "product": "Terracotta Lamp", "status": "Draft", "influencers": 0, "roi": "N/A"},
+        {"id": 5, "product": "Vegan Leather Wallet", "status": "Active", "influencers": 4, "roi": "+30%"}
+    ]
+
+@app.get("/products/featured")
+def get_featured_product():
+    """Returns data for the primary featured product."""
+    return {
+        "id": 101,
+        "name": "Artisan Crafted Clay Vase",
+        "description": "Sustainable wood-fired organic earthy clay pottery vase made by the Kutch Cooperative.",
+        "price": 800.00,
+        "stock": 150,
+        "image_url": "https://example.com/images/clay_vase.jpg"
+    }
