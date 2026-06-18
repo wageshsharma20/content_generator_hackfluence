@@ -77,44 +77,54 @@ def track_click_and_redirect(tracking_code: str, db: Session = Depends(get_db)):
     product_url = f"https://example.com/product/{campaign.product_id}"
     return RedirectResponse(url=product_url)
 
+
 # --- ML / AI Integration Endpoints (Step 5) ---
+import ml_schemas
+from analyzer import analyze_product
+from matcher import match_influencers
+from influencers import get_influencers
+from predictor import predict_campaign
+from outreach import generate_outreach
+from commission import recommend_commission
 
-@app.post("/matching")
-def find_influencer_matches(product_id: int):
-    # This is a placeholder! 
-    # Your friend will replace this with their actual Scikit-learn KNN model.
-    # We are returning dummy data that matches the exact structure your UI needs.
-    return {
-        "matches": [
-            {
-                "influencer_name": "Urban Handmade",
-                "match_score": 88,
-                "niche": "Traditional Crafts",
-                "followers": 45000,
-                "tags": ["Home Decor", "Sustainability", "Lifestyle"]
-            },
-            {
-                "influencer_name": "Eco Home Studio",
-                "match_score": 86,
-                "niche": "Interior Design",
-                "followers": 95000,
-                "tags": ["Home Decor", "Sustainability", "Lifestyle"]
-            }
-        ]
-    }
+@app.post("/matching", response_model=list[ml_schemas.MatchResult])
+def find_influencer_matches(request: ml_schemas.MatchRequest):
+    analysis = analyze_product(request.product_name, request.price, request.description)
+    matches = match_influencers(analysis, get_influencers())
+    
+    results = []
+    for m in matches[:3]:  # Return top 3 matches
+        comm = recommend_commission(m)
+        results.append({
+            "influencer_name": m["name"],
+            "match_score": m["match_score"],
+            "followers": m["followers"],
+            "engagement": m["engagement"],
+            "confidence_score": m["confidence_score"],
+            "recommended_commission": comm,
+            "why_match": m["why_match"]
+        })
+    return results
 
-@app.post("/prediction")
-def get_campaign_prediction(product_id: int, influencer_id: int):
-    # This is a placeholder for your friend's Logistic Regression model!
-    # It sends back the exact data your dashboard expects.
-    return {
-        "expected_reach": "145K",
-        "predicted_ctr": 3.4,
-        "expected_orders": 61,
-        "revenue": 48800,
-        "net_profit": 31000,
-        "ai_confidence_score": 92
-    }
+@app.post("/prediction", response_model=ml_schemas.PredictionResult)
+def get_campaign_prediction(request: ml_schemas.PredictionRequest):
+    forecast = predict_campaign(
+        request.match_score, 
+        request.followers, 
+        request.engagement, 
+        request.product_price
+    )
+    return forecast
+
+@app.post("/outreach")
+def get_outreach_message(request: ml_schemas.MatchRequest, influencer_name: str, commission: float):
+    analysis = analyze_product(request.product_name, request.price, request.description)
+    influencer_data = next(i for i in get_influencers() if i["name"] == influencer_name)
+    
+    # We need match score and other stuff that outreach might need, but we pass basic data 
+    # as expected by generate_outreach
+    message = generate_outreach(request.product_name, analysis, influencer_data, commission)
+    return {"message": message}
 
 
 # --- PHASE 2: DASHBOARD INTEGRATION ENDPOINTS ---
