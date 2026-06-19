@@ -1,9 +1,50 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import Link from "next/link";
-import { influencers } from "@/lib/influencers";
+
 import PageTransition from "@/components/ui/page-transition";
 
 export default function MatchingPage() {
+  const [influencers, setInfluencers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchMatches = async () => {
+      try {
+        const response = await fetch("/api/matching", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            product_name: "Handmade Terracotta Vase",
+            category: "Home Decor",
+            description: "Sustainable handmade pottery by rural artisans"
+          })
+        });
+        const data = await response.json();
+        setInfluencers(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchMatches();
+  }, []);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex min-h-screen items-center justify-center">
+          <div className="text-2xl font-bold tracking-[0.2em] text-[#1c1b17] animate-pulse">
+            GEMINI AI IS ANALYZING MATCHES...
+          </div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <DashboardLayout>
       <PageTransition>
@@ -55,7 +96,7 @@ export default function MatchingPage() {
           <div className="mt-16 space-y-8">
             {influencers.map((item, index) => (
               <div
-                key={item.id}
+                key={item.name}
                 className="border border-black/10 bg-white p-10 transition hover:border-black/20"
               >
                 <div className="grid gap-8 lg:grid-cols-[120px_1fr_180px]">
@@ -131,7 +172,7 @@ export default function MatchingPage() {
                     </p>
 
                     <div className="mt-6 text-8xl font-bold text-[#1c1b17]">
-                      {item.score}
+                      {item.match_score}
                     </div>
 
                     <p className="mt-2 text-sm text-[#6e7064]">
@@ -142,7 +183,7 @@ export default function MatchingPage() {
                       <div
                         className="h-[2px] bg-[#1c1b17]"
                         style={{
-                          width: `${item.score}%`,
+                          width: `${item.match_score}%`,
                         }}
                       />
                     </div>

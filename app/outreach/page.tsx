@@ -1,10 +1,36 @@
 "use client";
 
+import { useState } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import PageTransition from "@/components/ui/page-transition";
 
 export default function OutreachPage() {
-  const outreachMessage = `
+  const [outreachMessage, setOutreachMessage] = useState("Click Regenerate to generate outreach with Gemini 2.5 Flash...");
+  const [loading, setLoading] = useState(false);
+
+  const generateMessage = async () => {
+    setLoading(true);
+    setOutreachMessage("Gemini AI is crafting your message...");
+    try {
+      const response = await fetch("/api/outreach?influencer_name=Priya%20Decor&commission=15", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          product_name: "Handmade Terracotta Vase",
+          price: 800,
+          description: "Eco-friendly handmade pottery"
+        })
+      });
+      const data = await response.json();
+      setOutreachMessage(data.message);
+    } catch (e) {
+      setOutreachMessage("Failed to generate. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const dummy_str = `
 Dear Priya Decor,
 
 We believe your audience aligns exceptionally well with our artisan-led commerce initiative.
@@ -174,6 +200,8 @@ KarigarConnect AI
                   </button>
 
                   <button
+                    onClick={generateMessage}
+                    disabled={loading}
                     className="
                       rounded-full
                       border
@@ -182,9 +210,10 @@ KarigarConnect AI
                       py-4
                       text-xs
                       tracking-[0.25em]
+                      disabled:opacity-50
                     "
                   >
-                    REGENERATE
+                    {loading ? "GENERATING..." : "REGENERATE"}
                   </button>
                 </div>
               </div>

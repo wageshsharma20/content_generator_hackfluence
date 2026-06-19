@@ -1,8 +1,42 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import Link from "next/link";
 import PageTransition from "@/components/ui/page-transition";
 
 export default function PredictionPage() {
+  const [forecast, setForecast] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchForecast = async () => {
+      try {
+        const response = await fetch("/api/prediction", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            match_score: 92,
+            followers: 45000,
+            engagement: 5.2,
+            product_price: 800
+          })
+        });
+        const data = await response.json();
+        setForecast(data);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchForecast();
+  }, []);
+
+  const reach = forecast ? forecast.expected_reach : "...";
+  const ctr = forecast ? forecast.predicted_ctr + "%" : "...";
+  const orders = forecast ? forecast.expected_orders : "...";
+  const revenue = forecast ? "₹" + forecast.revenue : "...";
+  const netProfit = forecast ? "₹" + forecast.net_profit : "...";
+  const confidence = forecast ? forecast.ai_confidence_score + "%" : "...";
+
   return (
     <DashboardLayout>
       <PageTransition>
@@ -36,7 +70,7 @@ export default function PredictionPage() {
               </p>
 
               <div className="mt-4 text-6xl font-bold">
-                145K
+                {reach}
               </div>
             </div>
 
@@ -46,7 +80,7 @@ export default function PredictionPage() {
               </p>
 
               <div className="mt-4 text-6xl font-bold">
-                3.4%
+                {ctr}
               </div>
             </div>
 
@@ -56,7 +90,7 @@ export default function PredictionPage() {
               </p>
 
               <div className="mt-4 text-6xl font-bold">
-                61
+                {orders}
               </div>
             </div>
 
@@ -66,7 +100,7 @@ export default function PredictionPage() {
               </p>
 
               <div className="mt-4 text-6xl font-bold">
-                ₹48.8K
+                {revenue}
               </div>
             </div>
 
@@ -76,7 +110,7 @@ export default function PredictionPage() {
               </p>
 
               <div className="mt-4 text-6xl font-bold">
-                ₹31K
+                {netProfit}
               </div>
             </div>
           </div>
@@ -169,7 +203,7 @@ export default function PredictionPage() {
             <div className="mt-10 space-y-8">
               <div className="flex items-center justify-between border-b border-black/10 pb-4">
                 <span>Reach</span>
-                <span className="font-bold">145,000</span>
+                <span className="font-bold">{reach}</span>
               </div>
 
               <div className="flex items-center justify-between border-b border-black/10 pb-4">
@@ -179,13 +213,13 @@ export default function PredictionPage() {
 
               <div className="flex items-center justify-between border-b border-black/10 pb-4">
                 <span>Orders</span>
-                <span className="font-bold">61</span>
+                <span className="font-bold">{orders}</span>
               </div>
 
               <div className="flex items-center justify-between">
                 <span>Revenue</span>
                 <span className="text-3xl font-bold">
-                  ₹48,800
+                  {revenue}
                 </span>
               </div>
             </div>
@@ -212,7 +246,7 @@ export default function PredictionPage() {
               </div>
 
               <div className="text-8xl font-bold">
-                92%
+                {confidence}
               </div>
             </div>
 
