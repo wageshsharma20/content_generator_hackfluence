@@ -155,13 +155,12 @@ export default function AnalysisPage() {
                 CATEGORY
               </p>
 
-              <h3 className="mt-6 text-5xl font-bold">
-                {analysis ? analysis.category : 'Home Decor'}
+              <h3 className="mt-6 text-5xl font-bold text-red-500">
+                {analysis?.error ? "API Error" : (analysis ? analysis.category : 'Home Decor')}
               </h3>
 
               <p className="mt-4 text-[#6e7064]">
-                Strong creator-commerce category with
-                growing consumer demand.
+                {analysis?.error ? String(analysis.error) : "Strong creator-commerce category with growing consumer demand."}
               </p>
             </div>
 
@@ -170,13 +169,12 @@ export default function AnalysisPage() {
                 TARGET AUDIENCE
               </p>
 
-              <h3 className="mt-6 text-5xl font-bold">
-                {analysis ? analysis.audience : 'Women 25–40'}
+              <h3 className="mt-6 text-5xl font-bold text-red-500">
+                {analysis?.error ? "API Error" : (analysis ? analysis.audience : 'Women 25–40')}
               </h3>
 
               <p className="mt-4 text-[#6e7064]">
-                {analysis ? `Aligned with interests like ${analysis.interests?.join(', ')}` : 'Sustainability-focused consumers with'}
-                
+                {analysis?.error ? String(analysis.error) : (analysis ? `Aligned with interests like ${analysis.interests?.join(', ')}` : 'Sustainability-focused consumers with')}
               </p>
             </div>
           </div>

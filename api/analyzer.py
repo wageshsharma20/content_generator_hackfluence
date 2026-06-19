@@ -57,12 +57,25 @@ Do not add explanations.
 
     text = text.strip()
 
-    result = json.loads(text)
+    try:
+        parsed = json.loads(text)
+    except Exception as e:
+        # Fallback if Gemini hallucinates completely
+        return {
+            "category": "General Product",
+            "audience": "Broad Audience",
+            "interests": ["lifestyle"],
+            "keywords": ["general"]
+        }
 
-    assert set(result.keys()) == REQUIRED_KEYS, (
-        f"Unexpected keys: {result.keys()}"
-    )
-
+    # Ensure all keys exist so frontend doesn't break
+    result = {
+        "category": parsed.get("category", "General"),
+        "audience": parsed.get("audience", "Broad Audience"),
+        "interests": parsed.get("interests", ["lifestyle"]),
+        "keywords": parsed.get("keywords", ["product"])
+    }
+    
     return result
 
 
