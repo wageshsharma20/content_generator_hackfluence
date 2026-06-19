@@ -1,43 +1,10 @@
-import numpy as np
-from sklearn.linear_model import LogisticRegression
-
-
-def _train_conversion_model():
-    rng = np.random.default_rng(42)
-
-    N = 500
-
-    match = rng.uniform(40, 100, N)
-    engagement = rng.uniform(1, 8, N)
-
-    z = -4 + 0.04 * match + 0.30 * engagement + rng.normal(0, 0.5, N)
-
-    prob = 1 / (1 + np.exp(-z))
-
-    label = (
-        rng.uniform(0, 1, N) < prob
-    ).astype(int)
-
-    X = np.column_stack([
-        match,
-        engagement
-    ])
-
-    clf = LogisticRegression()
-
-    clf.fit(X, label)
-
-    return clf
-
-
-_conversion_model = _train_conversion_model()
-
+import math
 
 def predict_campaign(match_score, followers, engagement, price):
 
-    probability = _conversion_model.predict_proba([
-        [match_score, engagement]
-    ])[0][1]
+    # Hardcoded logistic regression formula to replace sklearn
+    z = -4 + 0.04 * match_score + 0.30 * engagement
+    probability = 1 / (1 + math.exp(-z))
 
     estimated_reach = int(
         followers * (engagement / 100) * 8
