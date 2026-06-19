@@ -1,0 +1,42 @@
+export const influencers = [
+  {
+    id: 1,
+    name: "Priya Decor",
+    niche: "Home Decor",
+    followers: 120000,
+    engagement: 4.8,
+    score: 94,
+  },
+  {
+    id: 2,
+    name: "Green Living India",
+    niche: "Sustainability",
+    followers: 80000,
+    engagement: 5.2,
+    score: 91,
+  },
+  {
+    id: 3,
+    name: "Urban Handmade",
+    niche: "Traditional Crafts",
+    followers: 45000,
+    engagement: 5.6,
+    score: 88,
+  },
+  {
+    id: 4,
+    name: "Eco Home Studio",
+    niche: "Interior Design",
+    followers: 95000,
+    engagement: 4.9,
+    score: 86,
+  },
+  {
+    id: 5,
+    name: "Craft Culture",
+    niche: "Handmade Products",
+    followers: 65000,
+    engagement: 5.4,
+    score: 84,
+  },
+];
