@@ -1,6 +1,7 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { fetchFromAPI } from "@/lib/api";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import PageTransition from "@/components/ui/page-transition";
 
@@ -10,15 +11,33 @@ export default function ProfitPage() {
   const [platformFee, setPlatformFee] = useState(15);
   const [commission, setCommission] = useState(10);
 
-  const artisanReceives =
-    price -
-    shipping -
-    platformFee -
-    (price * commission) / 100;
+  const [artisanReceives, setArtisanReceives] = useState(0);
+  const [margin, setMargin] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const margin = Math.round(
-    (artisanReceives / price) * 100
-  );
+  useEffect(() => {
+    async function calculateProfit() {
+      setIsLoading(true);
+      try {
+        const response = await fetchFromAPI("/profit", {
+          method: "POST",
+          body: JSON.stringify({
+            product_price: price,
+            shipping_cost: shipping,
+            platform_fee: platformFee,
+            commission_percent: commission
+          })
+        });
+        setArtisanReceives(response.artisan_earnings);
+        setMargin(Math.round((response.artisan_earnings / price) * 100) || 0);
+      } catch (err) {
+        console.error("Failed to calculate profit");
+      }
+      setIsLoading(false);
+    }
+    const timeoutId = setTimeout(() => calculateProfit(), 500);
+    return () => clearTimeout(timeoutId);
+  }, [price, shipping, platformFee, commission]);
 
   return (
     <DashboardLayout>
@@ -121,11 +140,11 @@ export default function ProfitPage() {
             </h2>
 
             <p className="mt-6 text-5xl font-bold text-green-700">
-              ₹{artisanReceives}
+              ₹{isLoading ? "..." : artisanReceives}
             </p>
 
             <p className="mt-3 text-green-600">
-              Margin: {margin}%
+              Margin: {isLoading ? "..." : margin}%
             </p>
 
             <div className="mt-8 rounded-2xl bg-white p-5">

@@ -1,12 +1,28 @@
 import Link from "next/link";
 
+import { fetchFromAPI } from "@/lib/api";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import StatCard from "@/components/dashboard/stat-card";
 import RevenueChart from "@/components/dashboard/revenue-chart";
 import ProgressTracker from "@/components/dashboard/progress-tracker";
 import PageTransition from "@/components/ui/page-transition";
 
-export default function Home() {
+export default async function Home() {
+  let impactData = { revenue_generated: "₹12.5L", families_supported: "850+", active_campaigns: 142 };
+  let featuredProduct = { name: "Handmade Terracotta Vase", description: "Sustainable Home Decor", price: 800 };
+  let recentCampaigns = [
+    { product: "Terracotta Vase", influencer: "Priya Decor", match: "94%", status: "Active", color: "green" },
+    { product: "Bamboo Basket", influencer: "Green Living India", match: "91%", status: "Pending", color: "yellow" }
+  ];
+
+  try {
+    impactData = await fetchFromAPI("/analytics/impact");
+    featuredProduct = await fetchFromAPI("/products/featured");
+    recentCampaigns = await fetchFromAPI("/campaigns/recent");
+  } catch (err) {
+    console.error(err);
+  }
+
   return (
     <DashboardLayout>
         <PageTransition>
@@ -77,7 +93,7 @@ export default function Home() {
                   </p>
 
                   <p className="text-3xl font-bold">
-                    850+
+                    {impactData.families_supported}
                   </p>
                 </div>
 
@@ -97,7 +113,7 @@ export default function Home() {
                   </p>
 
                   <p className="text-3xl font-bold">
-                    ₹12.5L
+                    {impactData.revenue_generated}
                   </p>
                 </div>
               </div>
@@ -220,15 +236,15 @@ export default function Home() {
 
             <div>
               <h3 className="font-semibold">
-                Handmade Terracotta Vase
+                {featuredProduct.name}
               </h3>
 
               <p className="text-slate-500">
-                Sustainable Home Decor
+                {featuredProduct.description}
               </p>
 
               <p className="mt-2 font-bold text-orange-600">
-                ₹800
+                ₹{featuredProduct.price}
               </p>
             </div>
           </div>
@@ -318,7 +334,7 @@ export default function Home() {
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <div>
               <p className="text-4xl font-bold">
-                ₹12.5L
+                {impactData.revenue_generated}
               </p>
 
               <p className="mt-2 text-slate-400">
@@ -328,7 +344,7 @@ export default function Home() {
 
             <div>
               <p className="text-4xl font-bold">
-                850+
+                {impactData.families_supported}
               </p>
 
               <p className="mt-2 text-slate-400">

@@ -1,9 +1,18 @@
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import Link from "next/link";
-import { influencers } from "@/lib/influencers";
+import { fetchFromAPI } from "@/lib/api";
 import PageTransition from "@/components/ui/page-transition";
 
-export default function MatchingPage() {
+export default async function MatchingPage() {
+  let influencers: any[] = [];
+  try {
+    influencers = await fetchFromAPI("/matching", {
+      method: "POST",
+      body: JSON.stringify({ product_name: "Handmade Terracotta Vase", price: 800, description: "Eco-friendly handmade pottery" })
+    });
+  } catch (err) {
+    console.error(err);
+  }
   return (
     <DashboardLayout>
         <PageTransition>
@@ -51,17 +60,17 @@ export default function MatchingPage() {
         <div className="mt-8 space-y-6">
           {influencers.map((item) => (
             <div
-              key={item.id}
+              key={item.influencer_name}
               className="rounded-3xl border bg-white p-6 shadow-sm transition hover:shadow-md"
             >
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h3 className="text-xl font-bold">
-                    {item.name}
+                    {item.influencer_name}
                   </h3>
 
                   <p className="text-slate-500">
-                    {item.niche}
+                    {item.why_match && item.why_match[0] ? item.why_match[0] : "Lifestyle & Decor"}
                   </p>
 
                   <p className="mt-1 text-sm text-slate-400">
@@ -75,7 +84,7 @@ export default function MatchingPage() {
 
                 <div className="text-right">
                   <div className="text-4xl font-bold text-green-600">
-                    {item.score}%
+                    {item.match_score}%
                   </div>
 
                   <p className="text-sm text-slate-500">
@@ -89,14 +98,14 @@ export default function MatchingPage() {
               <div className="mt-6">
                 <div className="mb-2 flex justify-between text-sm">
                   <span>Audience Match</span>
-                  <span>{item.score}%</span>
+                  <span>{item.match_score}%</span>
                 </div>
 
                 <div className="h-4 rounded-full bg-slate-100">
                   <div
                     className="h-4 rounded-full bg-gradient-to-r from-green-400 to-green-600"
                     style={{
-                      width: `${item.score}%`,
+                      width: `${item.match_score}%`,
                     }}
                   />
                 </div>

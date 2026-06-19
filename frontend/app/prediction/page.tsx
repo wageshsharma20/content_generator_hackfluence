@@ -1,8 +1,31 @@
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import Link from "next/link";
 import PageTransition from "@/components/ui/page-transition";
+import { fetchFromAPI } from "@/lib/api";
 
-export default function PredictionPage() {
+export default async function PredictionPage() {
+  let forecast = null;
+  try {
+    forecast = await fetchFromAPI("/prediction", {
+      method: "POST",
+      body: JSON.stringify({
+        match_score: 92,
+        followers: 45000,
+        engagement: 5.2,
+        product_price: 800
+      })
+    });
+  } catch (err) {
+    console.error(err);
+  }
+
+  const reach = forecast ? forecast.expected_reach : "145K";
+  const ctr = forecast ? forecast.predicted_ctr + "%" : "3.4%";
+  const orders = forecast ? forecast.expected_orders : "61";
+  const revenue = forecast ? "₹" + forecast.revenue : "₹48,800";
+  const netProfit = forecast ? "₹" + forecast.net_profit : "₹31,000";
+  const confidence = forecast ? forecast.ai_confidence_score + "%" : "92%";
+
   return (
     <DashboardLayout>
         <PageTransition>
@@ -37,7 +60,7 @@ export default function PredictionPage() {
             </h3>
 
             <p className="mt-3 text-4xl font-bold text-blue-700">
-              145K
+              {reach}
             </p>
           </div>
 
@@ -47,7 +70,7 @@ export default function PredictionPage() {
             </h3>
 
             <p className="mt-3 text-4xl font-bold text-purple-700">
-              3.4%
+              {ctr}
             </p>
           </div>
 
@@ -57,7 +80,7 @@ export default function PredictionPage() {
             </h3>
 
             <p className="mt-3 text-4xl font-bold text-orange-700">
-              61
+              {orders}
             </p>
           </div>
 
@@ -67,7 +90,7 @@ export default function PredictionPage() {
             </h3>
 
             <p className="mt-3 text-4xl font-bold text-green-700">
-              ₹48,800
+              {revenue}
             </p>
           </div>
 
@@ -77,7 +100,7 @@ export default function PredictionPage() {
             </h3>
 
             <p className="mt-3 text-4xl font-bold text-emerald-700">
-              ₹31,000
+              {netProfit}
             </p>
           </div>
         </div>
@@ -141,7 +164,7 @@ export default function PredictionPage() {
             </div>
 
             <div className="text-6xl font-bold text-green-400">
-              92%
+              {confidence}
             </div>
             <Link
   href="/profit"
@@ -199,7 +222,7 @@ export default function PredictionPage() {
   <div className="mt-6 space-y-4">
     <div className="flex justify-between">
       <span>Reach</span>
-      <span>145,000</span>
+      <span>{reach}</span>
     </div>
 
     <div className="flex justify-between">
@@ -209,12 +232,12 @@ export default function PredictionPage() {
 
     <div className="flex justify-between">
       <span>Orders</span>
-      <span>61</span>
+      <span>{orders}</span>
     </div>
 
     <div className="flex justify-between font-bold text-green-600">
       <span>Revenue</span>
-      <span>₹48,800</span>
+      <span>{revenue}</span>
     </div>
   </div>
 </div>

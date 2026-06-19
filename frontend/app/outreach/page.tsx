@@ -1,30 +1,36 @@
 "use client";
 
+import { fetchFromAPI } from "@/lib/api";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import PageTransition from "@/components/ui/page-transition";
 
 export default function OutreachPage() {
-  const outreachMessage = `
-Dear Priya Decor,
+  const [outreachMessage, setOutreachMessage] = useState("Loading AI Outreach Message...");
+  const [isLoading, setIsLoading] = useState(false);
 
-We believe your audience aligns perfectly with our sustainable terracotta collection.
+  const generateEmail = async () => {
+    setIsLoading(true);
+    setOutreachMessage("Generating personalized email with Gemini 2.5 Flash...");
+    try {
+      const response = await fetchFromAPI("/outreach?influencer_name=Urban%20Handmade&commission=15", {
+        method: "POST",
+        body: JSON.stringify({
+          product_name: "Handmade Terracotta Vase",
+          price: 800,
+          description: "Eco-friendly handmade pottery"
+        })
+      });
+      setOutreachMessage(response.message);
+    } catch (e) {
+      setOutreachMessage("Failed to generate outreach message.");
+    }
+    setIsLoading(false);
+  };
 
-Your content around interior decoration and conscious living makes you an ideal partner for showcasing handcrafted artisan products from rural communities.
-
-We would love to collaborate with you on promoting our Handmade Terracotta Vase.
-
-Campaign Details:
-• Match Score: 94%
-• Expected Reach: 145,000
-• Expected Orders: 61
-• Commission Offered: 15%
-
-By partnering together, we can help rural artisans reach a wider audience while providing your followers with authentic handmade products.
-
-Looking forward to working together.
-
-Team KarigarConnect AI
-`;
+  useEffect(() => {
+    generateEmail();
+  }, []);
 
   const copyMessage = async () => {
     try {
@@ -166,6 +172,8 @@ Team KarigarConnect AI
               </button>
 
               <button
+                onClick={generateEmail}
+                disabled={isLoading}
                 className="
                   rounded-xl
                   border
@@ -176,9 +184,10 @@ Team KarigarConnect AI
                   text-slate-700
                   transition
                   hover:bg-slate-50
+                  disabled:opacity-50
                 "
               >
-                Regenerate
+                {isLoading ? "Generating..." : "Regenerate"}
               </button>
             </div>
           </div>
