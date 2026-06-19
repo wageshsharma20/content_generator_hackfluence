@@ -22,7 +22,7 @@ export default function AnalysisPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({
               product_name: parsedProduct.name || "Handmade Terracotta Vase",
-              price: parseFloat((parsedProduct.price || "800").replace("₹", "")),
+              price: parseFloat(String(parsedProduct.price || "800").replace("₹", "")),
               description: parsedProduct.description || "Eco-friendly handmade pottery"
             })
           });
