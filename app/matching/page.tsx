@@ -13,13 +13,15 @@ export default function MatchingPage() {
   useEffect(() => {
     const fetchMatches = async () => {
       try {
+        const productData = JSON.parse(localStorage.getItem('product') || '{}');
         const response = await fetch("/api/matching", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            product_name: "Handmade Terracotta Vase",
+            product_name: productData.name || "Handmade Terracotta Vase",
             category: "Home Decor",
-            description: "Sustainable handmade pottery by rural artisans"
+            description: productData.description || "Sustainable handmade pottery by rural artisans",
+            price: parseFloat((productData.price || "800").replace("₹", ""))
           })
         });
         const data = await response.json();

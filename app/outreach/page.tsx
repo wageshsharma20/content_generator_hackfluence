@@ -12,13 +12,14 @@ export default function OutreachPage() {
     setLoading(true);
     setOutreachMessage("Gemini AI is crafting your message...");
     try {
+      const productData = JSON.parse(localStorage.getItem('product') || '{}');
       const response = await fetch("/api/outreach?influencer_name=Priya%20Decor&commission=15", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          product_name: "Handmade Terracotta Vase",
-          price: 800,
-          description: "Eco-friendly handmade pottery"
+          product_name: productData.name || "Handmade Terracotta Vase",
+          price: parseFloat((productData.price || "800").replace("₹", "")),
+          description: productData.description || "Eco-friendly handmade pottery"
         })
       });
       const data = await response.json();
@@ -116,7 +117,7 @@ KarigarConnect AI
                     </p>
 
                     <div className="mt-2 text-3xl font-bold">
-                      Handmade Terracotta Vase
+                      {JSON.parse(localStorage.getItem("product") || "{}").name || "Handmade Terracotta Vase"}
                     </div>
                   </div>
 
