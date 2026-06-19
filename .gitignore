@@ -4,3 +4,8 @@ node_modules
 .env.local
 dist
 build.DS_Store
+backend/.env
+__pycache__/
+*.pyc
+.env
+backend/.env

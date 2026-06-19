@@ -87,6 +87,17 @@ from predictor import predict_campaign
 from outreach import generate_outreach
 from commission import recommend_commission
 
+@app.post("/analyze")
+def analyze(request: ml_schemas.MatchRequest):
+
+    analysis = analyze_product(
+        request.product_name,
+        request.price,
+        request.description
+    )
+
+    return analysis
+
 @app.post("/matching", response_model=list[ml_schemas.MatchResult])
 def find_influencer_matches(request: ml_schemas.MatchRequest):
     analysis = analyze_product(request.product_name, request.price, request.description)
