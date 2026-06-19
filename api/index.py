@@ -26,7 +26,7 @@ def health_check():
 
 # --- The Profit Calculator Endpoint ---
 # We use @app.post because the frontend is "posting" data to us to calculate.
-@app.post("/profit", response_model=schemas.ProfitCalculatorResponse)
+@app.post("/api/profit", response_model=schemas.ProfitCalculatorResponse)
 def calculate_profit(request: schemas.ProfitCalculatorRequest):
     # 1. Calculate the commission amount based on the percentage
     commission_amount = request.product_price * (request.commission_percent / 100)
@@ -98,7 +98,7 @@ def analyze(request: ml_schemas.MatchRequest):
 
     return analysis
 
-@app.post("/matching", response_model=list[ml_schemas.MatchResult])
+@app.post("/api/matching", response_model=list[ml_schemas.MatchResult])
 def find_influencer_matches(request: ml_schemas.MatchRequest):
     analysis = analyze_product(request.product_name, request.price, request.description)
     matches = match_influencers(analysis, get_influencers())
@@ -117,7 +117,7 @@ def find_influencer_matches(request: ml_schemas.MatchRequest):
         })
     return results
 
-@app.post("/prediction", response_model=ml_schemas.PredictionResult)
+@app.post("/api/prediction", response_model=ml_schemas.PredictionResult)
 def get_campaign_prediction(request: ml_schemas.PredictionRequest):
     forecast = predict_campaign(
         request.match_score, 
