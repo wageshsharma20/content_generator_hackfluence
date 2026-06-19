@@ -156,7 +156,7 @@ export default function AnalysisPage() {
                 CATEGORY
               </p>
 
-              <h3 className="mt-6 text-5xl font-bold text-red-500">
+              <h3 className={`mt-6 text-5xl font-bold ${analysis?.error ? "text-red-500" : ""}`}>
                 {analysis?.error ? "API Error" : (analysis ? analysis.category : 'Home Decor')}
               </h3>
 
@@ -170,7 +170,7 @@ export default function AnalysisPage() {
                 TARGET AUDIENCE
               </p>
 
-              <h3 className="mt-6 text-5xl font-bold text-red-500">
+              <h3 className={`mt-6 text-5xl font-bold ${analysis?.error ? "text-red-500" : ""}`}>
                 {analysis?.error ? "API Error" : (analysis ? analysis.audience : 'Women 25–40')}
               </h3>
 
