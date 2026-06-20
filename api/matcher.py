@@ -1,10 +1,5 @@
 import os
 import math
-from google import genai
-
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-TOP_K = 20
 
 SEMANTIC_WEIGHT = 0.50
 ENGAGEMENT_WEIGHT = 0.35
@@ -19,54 +14,37 @@ def build_product_text(analysis):
         f"Keywords: {keywords}."
     )
 
-def build_influencer_text(inf):
-    return (
-        f"{inf['name']} creates content about {inf['niche']}. "
-        f"Their audience is {inf['audience']}. "
-        f"They regularly post in the {inf['niche']} niche."
-    )
-
-def cosine_similarity(v1, v2):
-    dot = sum(a * b for a, b in zip(v1, v2))
-    norm1 = math.sqrt(sum(a * a for a in v1))
-    norm2 = math.sqrt(sum(b * b for b in v2))
-    if norm1 == 0 or norm2 == 0: return 0.0
-    return dot / (norm1 * norm2)
-
-def get_embedding(text):
-    try:
-        response = client.models.embed_content(
-            model='text-embedding-004',
-            contents=text
-        )
-        return response.embeddings[0].values
-    except Exception as e:
-        print(f"Embedding error: {e}")
-        # Fallback dummy embedding if API fails
-        return [0.1] * 768
-
 def match_influencers(analysis, influencers):
-    product_text = build_product_text(analysis)
-    product_emb = get_embedding(product_text)
+    product_category = analysis.get("category", "").lower()
+    
+    # 1. Filter influencers by category to search the whole DB efficiently
+    filtered_influencers = [
+        inf for inf in influencers 
+        if inf.get("niche", "").lower() == product_category
+    ]
+    
+    # If no exact match, fallback to all (e.g. if category is weird)
+    if not filtered_influencers:
+        filtered_influencers = influencers
 
     results = []
 
-    for inf in influencers[:TOP_K]:
-        inf_text = build_influencer_text(inf)
-        inf_emb = get_embedding(inf_text)
+    # 2. Score them instantly using algorithmic heuristics instead of slow LLM embeddings
+    for inf in filtered_influencers:
+        # Base semantic score is high if niches matched
+        semantic_score = 90.0 if inf.get("niche", "").lower() == product_category else 50.0
 
-        sim = cosine_similarity(product_emb, inf_emb)
-        
-        # Adjust similarity so it doesn't bunch around 0.99 for small datasets
-        semantic_score = (sim * 100) - 5 
-
+        # Engagement score (cap at 100)
         engagement_score = min(inf["engagement"] * 10, 100)
-        follower_score = min(inf["followers"] / 2000, 100)
+        
+        # Follower score (logarithmic scale to handle Kaggle's massive influencers)
+        # log10(1,000,000) = 6. Let's say 1,000,000 followers = 100 score.
+        follower_score = min((math.log10(max(inf["followers"], 10)) / 6) * 100, 100)
 
         final_score = (
-            semantic_score * 0.70 +
-            engagement_score * 0.20 +
-            follower_score * 0.10
+            semantic_score * SEMANTIC_WEIGHT +
+            engagement_score * ENGAGEMENT_WEIGHT +
+            follower_score * FOLLOWER_WEIGHT
         )
 
         confidence_score = (
@@ -74,16 +52,16 @@ def match_influencers(analysis, influencers):
             engagement_score * 0.25 +
             follower_score * 0.15
         )
-        confidence_score = min(confidence_score + 20, 95)
+        confidence_score = min(confidence_score + 10, 99)
 
         results.append({
             "name": inf["name"],
             "match_score": round(final_score, 1),
             "confidence_score": round(confidence_score, 1),
             "why_match": [
-                f"Strong match in {inf['niche']} niche",
-                f"Audience aligns with {analysis['audience']}",
-                f"High engagement rate of {inf['engagement']}%"
+                f"Strong presence in {inf.get('niche', 'this niche')} space",
+                f"Audience aligns with {analysis.get('target_audience', 'the target demographic')}",
+                f"High engagement rate ({inf['engagement']}%) indicates active followers"
             ],
             "semantic_score": round(semantic_score, 1),
             "engagement_score": round(engagement_score, 1),
@@ -94,6 +72,7 @@ def match_influencers(analysis, influencers):
             "niche": inf["niche"]
         })
 
+    # Sort by match score
     results.sort(key=lambda x: x["match_score"], reverse=True)
     return results
 
@@ -102,5 +81,5 @@ if __name__ == "__main__":
     from influencers import get_influencers
     analysis = analyze_product("Handmade Terracotta Vase", 800, "Eco-friendly handmade pottery")
     matches = match_influencers(analysis, get_influencers())
-    for m in matches:
+    for m in matches[:5]:
         print(f"{m['name']:<20} {m['match_score']}%")

@@ -12,8 +12,8 @@ class Influencer(Base):
     name = Column(String, index=True)
     niche = Column(String)  # e.g., "Sustainability", "Home Decor"
     followers = Column(Integer)
-    engagement_rate = Column(Float) # e.g., 5.4 for 5.4%
-    platform = Column(String, default="Instagram")
+    engagement = Column(Float) # e.g., 5.4 for 5.4%
+    audience = Column(String)
 
 class Product(Base):
     __tablename__ = "products"

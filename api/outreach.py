@@ -4,9 +4,8 @@ import os
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+api_key = os.getenv("GEMINI_API_KEY")
+client = genai.Client(api_key=api_key) if api_key else None
 
 def generate_outreach(
     product_name,
@@ -14,8 +13,11 @@ def generate_outreach(
     influencer,
     commission_pct=15
 ):
+    if not client:
+        return "Hi there! We'd love to collaborate with you on our latest campaign. Please check out the details!"
+    
     interests = ", ".join(
-        analysis["interests"]
+        analysis.get("key_selling_points", ["general interests"])
     )
 
     prompt = f"""
@@ -53,12 +55,15 @@ Requirements:
 Return only the message.
 """
 
-    response = client.models.generate_content(
-        model="gemini-2.5-flash-lite",
-        contents=prompt
-    )
-
-    return response.text.strip()
+    try:
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-lite",
+            contents=prompt
+        )
+        return response.text.strip()
+    except Exception as e:
+        print(f"Warning: Gemini API failed ({e}). Using fallback outreach message.")
+        return f"Hi {influencer['name']},\n\nWe love your {influencer['niche']} content and think your audience would absolutely love our {product_name}. Our AI matching system identified you as an ideal partner!\n\nWe're offering a {commission_pct}% commission on all sales. Let us know if you're interested in collaborating!\n\nBest,\nThe Team"
 
 
 

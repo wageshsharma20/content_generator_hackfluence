@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 import PageTransition from "@/components/ui/page-transition";
 
@@ -10,6 +10,20 @@ export default function ProfitPage() {
   const [shipping, setShipping] = useState("120");
   const [platformFee, setPlatformFee] = useState("15");
   const [commission, setCommission] = useState("10");
+
+  useEffect(() => {
+    try {
+      const prod = JSON.parse(localStorage.getItem("product") || "{}");
+      if (prod.price) {
+        setPrice(String(prod.price).replace("₹", ""));
+      }
+      
+      const matchData = JSON.parse(localStorage.getItem("top_match") || "{}");
+      if (matchData.recommended_commission) {
+        setCommission(String(matchData.recommended_commission));
+      }
+    } catch(e) {}
+  }, []);
 
   const priceNum = Number(price) || 0;
   const shippingNum = Number(shipping) || 0;

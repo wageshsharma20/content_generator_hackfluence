@@ -8,11 +8,15 @@ export default function OutreachPage() {
   const [outreachMessage, setOutreachMessage] = useState("Click Regenerate to generate outreach with Gemini 2.5 Flash...");
   const [loading, setLoading] = useState(false);
   const [productName, setProductName] = useState("Handmade Terracotta Vase");
+  const [topMatch, setTopMatch] = useState<any>(null);
 
   useEffect(() => {
     try {
       const data = JSON.parse(localStorage.getItem("product") || "{}");
       if (data.name) setProductName(data.name);
+      
+      const matchData = JSON.parse(localStorage.getItem("top_match") || "{}");
+      setTopMatch(matchData);
     } catch (e) {}
   }, []);
 
@@ -34,6 +38,10 @@ export default function OutreachPage() {
           description: productData.description || "Eco-friendly handmade pottery"
         })
       });
+      if (!response.ok) {
+        setOutreachMessage(`API Error: ${response.status}`);
+        return;
+      }
       const data = await response.json();
       setOutreachMessage(data.message);
     } catch (e) {
@@ -43,28 +51,6 @@ export default function OutreachPage() {
     }
   };
 
-  const topMatch = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('top_match') || '{}') : {};
-  const dummy_str = `
-Dear ${topMatch.influencer_name || "Priya Decor"},
-
-We believe your audience aligns exceptionally well with our artisan-led commerce initiative.
-
-Your content around sustainable living, interior design and conscious consumption makes you a strong candidate for introducing handcrafted terracotta products to a highly engaged audience.
-
-Campaign Overview
-
-• Product: Handmade Terracotta Vase
-• Match Score: 94%
-• Expected Reach: 145,000
-• Expected Orders: 61
-• Commission Offered: 15%
-
-This collaboration supports rural artisan communities while providing your audience with authentic handmade products and meaningful stories.
-
-We look forward to discussing a potential partnership.
-
-KarigarConnect AI
-`;
 
   const copyMessage = async () => {
     try {
@@ -120,7 +106,7 @@ KarigarConnect AI
                     </p>
 
                     <div className="mt-2 text-3xl font-bold">
-                      Priya Decor
+                      {topMatch?.influencer_name || "Priya Decor"}
                     </div>
                   </div>
 
@@ -140,7 +126,7 @@ KarigarConnect AI
                     </p>
 
                     <div className="mt-2 text-5xl font-bold">
-                      94%
+                      {topMatch?.match_score || 94}%
                     </div>
                   </div>
 
@@ -150,7 +136,7 @@ KarigarConnect AI
                     </p>
 
                     <div className="mt-2 text-5xl font-bold">
-                      145K
+                      {topMatch?.followers ? Math.round(topMatch.followers * (topMatch.engagement / 100) * 8).toLocaleString() : "145K"}
                     </div>
                   </div>
 
@@ -160,7 +146,7 @@ KarigarConnect AI
                     </p>
 
                     <div className="mt-2 text-5xl font-bold">
-                      15%
+                      {topMatch?.recommended_commission || 15}%
                     </div>
                   </div>
                 </div>

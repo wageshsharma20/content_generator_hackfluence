@@ -7,12 +7,14 @@ import PageTransition from "@/components/ui/page-transition";
 
 export default function PredictionPage() {
   const [forecast, setForecast] = useState<any>(null);
+  const [topMatch, setTopMatch] = useState<any>(null);
 
   useEffect(() => {
     const fetchForecast = async () => {
       try {
-        const topMatch = JSON.parse(localStorage.getItem('top_match') || '{}');
+        const topMatchData = JSON.parse(localStorage.getItem('top_match') || '{}');
         const productData = JSON.parse(localStorage.getItem('product') || '{}');
+        setTopMatch(topMatchData);
         const price = parseFloat((productData.price || "800").replace("₹", ""));
         
         const response = await fetch("/api/prediction", {
@@ -20,12 +22,16 @@ export default function PredictionPage() {
           headers: { "Content-Type": "application/json" },
           cache: "no-store",
           body: JSON.stringify({
-            match_score: topMatch.match_score || 90,
-            followers: topMatch.followers || 10000,
-            engagement: topMatch.engagement || 3.5,
+            match_score: topMatchData.match_score || 90,
+            followers: topMatchData.followers || 10000,
+            engagement: topMatchData.engagement || 3.5,
             product_price: price
           })
         });
+        if (!response.ok) {
+          console.error("API Error", response.status);
+          return;
+        }
         const data = await response.json();
         setForecast(data);
       } catch (err) {
@@ -168,7 +174,7 @@ export default function PredictionPage() {
 
               <div className="border border-black/10 p-10">
                 <div className="text-6xl font-bold">
-                  {forecast ? ((typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('top_match') || '{}').engagement : null) || 5.2) + '%' : "..."}
+                  {forecast ? (topMatch?.engagement || 5.2) + '%' : "..."}
                 </div>
 
                 <h3 className="mt-6 text-2xl font-bold">
@@ -213,7 +219,7 @@ export default function PredictionPage() {
 
               <div className="flex items-center justify-between border-b border-black/10 pb-4">
                 <span>Clicks</span>
-                <span className="font-bold">4,930</span>
+                <span className="font-bold">{forecast ? String(Math.floor(Number(forecast.expected_reach || 0) * Number(forecast.predicted_ctr || 0)) || 0) : "..."}</span>
               </div>
 
               <div className="flex items-center justify-between border-b border-black/10 pb-4">

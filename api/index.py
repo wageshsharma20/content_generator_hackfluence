@@ -3,8 +3,9 @@ import os
 # Ensure the current directory is in sys.path so Vercel can find models.py
 sys.path.insert(0, os.path.dirname(__file__))
 
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Request
 from fastapi.responses import RedirectResponse
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 import models
 import schemas
@@ -16,6 +17,14 @@ models.Base.metadata.create_all(bind=engine)
 
 # Initialize the FastAPI application
 app = FastAPI(title="KarigarConnect AI API")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # A simple "Route" or "Endpoint"
 # Think of this like an address on the internet. When someone goes to the root address ("/"),
@@ -44,7 +53,7 @@ def calculate_profit(request: schemas.ProfitCalculatorRequest):
 
 # --- Affiliate Link Generation ---
 @app.post("/api/campaigns/create")
-def create_campaign(product_id: int, influencer_id: int, db: Session = Depends(get_db)):
+def create_campaign(product_id: int, influencer_id: int, req: Request, db: Session = Depends(get_db)):
     # Generate a random 8-character string for our unique link
     unique_code = str(uuid.uuid4())[:8]
     
@@ -59,9 +68,10 @@ def create_campaign(product_id: int, influencer_id: int, db: Session = Depends(g
     db.commit()
     db.refresh(new_campaign)
     
+    base_url = str(req.base_url).rstrip("/")
     return {
         "message": "Campaign Created!",
-        "tracking_link": f"http://localhost:8000/buy/{unique_code}"
+        "tracking_link": f"{base_url}/api/buy/{unique_code}"
     }
 
 # --- The Click Tracker ---
@@ -98,7 +108,8 @@ def analyze(request: ml_schemas.MatchRequest):
         analysis = analyze_product(
             request.product_name,
             request.price,
-            request.description
+            request.description,
+            request.image
         )
         return analysis
     except Exception as e:
@@ -107,7 +118,7 @@ def analyze(request: ml_schemas.MatchRequest):
 
 @app.post("/api/matching", response_model=list[ml_schemas.MatchResult])
 def find_influencer_matches(request: ml_schemas.MatchRequest):
-    analysis = analyze_product(request.product_name, request.price, request.description)
+    analysis = analyze_product(request.product_name, request.price, request.description, request.image)
     matches = match_influencers(analysis, get_influencers())
     
     results = []
@@ -138,8 +149,11 @@ def get_campaign_prediction(request: ml_schemas.PredictionRequest):
 
 @app.post("/api/outreach")
 def get_outreach_message(request: ml_schemas.MatchRequest, influencer_name: str, commission: float):
-    analysis = analyze_product(request.product_name, request.price, request.description)
-    influencer_data = next(i for i in get_influencers() if i["name"] == influencer_name)
+    analysis = analyze_product(request.product_name, request.price, request.description, request.image)
+    try:
+        influencer_data = next(i for i in get_influencers() if i["name"] == influencer_name)
+    except StopIteration:
+        raise HTTPException(status_code=404, detail=f"Influencer '{influencer_name}' not found")
     
     # We need match score and other stuff that outreach might need, but we pass basic data 
     # as expected by generate_outreach
@@ -188,3 +202,7 @@ def get_featured_product():
         "stock": 150,
         "image_url": "https://example.com/images/clay_vase.jpg"
     }
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("index:app", host="0.0.0.0", port=8000, reload=True)

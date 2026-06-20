@@ -22,18 +22,27 @@ export default function AnalysisPage() {
             headers: { "Content-Type": "application/json" },
             cache: 'no-store', // Force no-cache so we get fresh data every time!
             body: JSON.stringify({
-              product_name: parsedProduct.name || "Handmade Terracotta Vase",
-              price: parseFloat(String(parsedProduct.price || "800").replace("₹", "")),
-              description: parsedProduct.description || "Eco-friendly handmade pottery"
+              product_name: parsedProduct.name || "Unknown Product",
+              price: parseFloat(String(parsedProduct.price || "1000").replace("₹", "")),
+              description: parsedProduct.description || "No description provided",
+              image: parsedProduct.image || null
             })
           });
+          if (!res.ok) {
+            setAnalysis({ error: `API Error: ${res.status}` });
+            return;
+          }
           const ans = await res.json();
           setAnalysis(ans);
         } catch(e) {
           console.error(e);
+          setAnalysis({ error: "Failed to connect to API" });
         }
       };
       fetchAnalysis();
+    } else {
+      setProduct({ name: "Handmade Terracotta Vase", price: "800", description: "Eco-friendly handmade pottery" });
+      setAnalysis({ error: "No product data found. Please go back and upload a product." });
     }
   }, []);
 

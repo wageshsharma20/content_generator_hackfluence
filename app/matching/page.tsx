@@ -20,12 +20,16 @@ export default function MatchingPage() {
           cache: "no-store",
           body: JSON.stringify({
             product_name: productData.name || "Handmade Terracotta Vase",
-            category: "Home Decor",
-            description: productData.description || "Sustainable handmade pottery by rural artisans",
-            price: parseFloat((productData.price || "800").replace("₹", ""))
+            price: parseFloat(String(productData.price || "800").replace("₹", "")),
+            description: productData.description || "Sustainable handmade pottery by rural artisans"
           })
         });
         const data = await response.json();
+        if (!response.ok) {
+          console.error(`API Error: ${response.status}`);
+          setInfluencers([]);
+          return;
+        }
         if (data && data.length > 0) {
             localStorage.setItem("top_match", JSON.stringify(data[0]));
         }
@@ -156,7 +160,7 @@ export default function MatchingPage() {
                         </p>
 
                         <p className="mt-2 text-3xl font-bold">
-                          {item.followers.toLocaleString()}
+                          {item.followers?.toLocaleString()}
                         </p>
                       </div>
 
